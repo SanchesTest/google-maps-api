@@ -113,9 +113,6 @@ out geom; -->
             const { Map, Polygon  } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
 
-            console.log(PinElement)
-        
-            
             const polygonCoordinates = choicedData.features[0].geometry.coordinates[0];
 
             // Создаем массив для хранения координат полигона
@@ -136,8 +133,6 @@ out geom; -->
                 lat: latSum / polygonCoordinates.length,
                 lng: lngSum / polygonCoordinates.length
             };
-
-           
 
             const map = new Map(document.getElementById("map"), {
                 zoom: 10,
@@ -160,7 +155,9 @@ out geom; -->
             sitePolygon.setMap(map);
 
             const pin = new PinElement({
-                background: "#FBBC04",
+                background: "#00a1de",
+                glyph: 'text',
+                borderColor: 'none',
             });
 
             const marker = new AdvancedMarkerElement({
@@ -168,10 +165,7 @@ out geom; -->
                 position: center,
                 content: pin.element,
             });
-
         }
-
-        
 
     </script>
     
