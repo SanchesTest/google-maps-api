@@ -74,12 +74,17 @@ out geom; -->
 
             // Устанавливаем центр карты
             const center = { lat: 50.4500336, lng: 30.5241361 };
+            const location = { lat: 50.429952, lng: 30.375936 };
 
             // Создаем новый объект карты, указывая элемент DOM, зум и центр
             map = new Map(document.getElementById('map'), {
                 zoom: 10,
                 center: center,
-                mapId: "DEMO_MAP_ID" // Идентификатор карты (для примера)
+                streetViewControl: false,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+                },
+                mapId: "DEMO_MAP_ID"
             });
 
             // Определяем маркеры для карты
@@ -105,7 +110,7 @@ out geom; -->
                     icon: '<i class="fa-solid fa-house-chimney-user"></i>', // Иконка для местоположения
                 }
             };
-
+  
             // Создаем маркеры на основе данных иконок
             markers.forEach((marker) => {
                 // Создаем элемент иконки маркера
@@ -127,10 +132,19 @@ out geom; -->
                     content: faPin.element,
                     map: map,
                 });
+
+                
             });
 
             // Функция для определения местоположения пользователя
             getMyLocation();
+
+            // Пользовательская кнопка
+            const centerControlDiv = document.createElement("div"); 
+            const centerControl = btnStartPosition(map, location);
+
+            centerControlDiv.appendChild(centerControl);
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
         }
 
 
@@ -194,6 +208,33 @@ out geom; -->
                 // Открываем инфо-окно на карте
                 infoWindow.open(map);
             }
+        }
+
+        // =======================
+        // Пользовательская кнопка
+        // =======================
+        function btnStartPosition(map, pos) {
+            const controlButton = document.createElement("button");
+
+            controlButton.style.backgroundColor = "#fff";
+            controlButton.style.border = "2px solid #fff";
+            controlButton.style.borderRadius = "3px";
+            controlButton.style.boxShadow = "0 2px 6px rgba(0,0,0,.3)";
+            controlButton.style.color = "rgb(25,25,25)";
+            controlButton.style.cursor = "pointer";
+            controlButton.style.fontFamily = "Roboto,Arial,sans-serif";
+            controlButton.style.fontSize = "14px";
+            controlButton.style.margin = "5px";
+            controlButton.style.padding = "2px";
+            controlButton.style.textAlign = "center";
+            controlButton.textContent = "Начало пути";
+            controlButton.title = "Click to recenter the map";
+            controlButton.type = "button";
+            // Setup the click event listeners: simply set the map to Chicago.
+            controlButton.addEventListener("click", () => {
+                map.setCenter(pos);
+            });
+            return controlButton;
         }
     </script>
     
