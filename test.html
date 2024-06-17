@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- [out:json];
+rel[name="Київ"];
+out geom; -->
+
+    <style>
+        #map {
+            height: 800px;
+            /* The height is 400 pixels */
+            width: 100%;
+            /* The width is the width of the web page */
+        }
+    </style>
+
+    <button class="btn-location">Мое расположение</button>
+
+    <div id="map"></div>
+
+    <script>
+        (g => {
+            var h, a, k, p = "The Google Maps JavaScript API",
+                c = "google",
+                l = "importLibrary",
+                q = "__ib__",
+                m = document,
+                b = window;
+            b = b[c] || (b[c] = {});
+            var d = b.maps || (b.maps = {}),
+                r = new Set,
+                e = new URLSearchParams,
+                u = () => h || (h = new Promise(async (f, n) => {
+                    await (a = m.createElement("script"));
+                    e.set("libraries", [...r] + "");
+                    for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+                    e.set("callback", c + ".maps." + q);
+                    a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+                    d[q] = f;
+                    a.onerror = () => h = n(Error(p + " could not load."));
+                    a.nonce = m.querySelector("script[nonce]") ?.nonce || "";
+                    m.head.append(a)
+                }));
+            d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(
+                () => d[l](f, ...n))
+        })
+        ({
+            key: "AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg",
+            v: "weekly"
+        });
+        
+    </script>
+
+    <script>
+        // Объявляем переменные для карты
+        let map;
+
+        // Функция инициализации карты
+        async function initMap() {
+            // Загружаем библиотеку Google Maps и необходимые классы
+            const { Map } = await google.maps.importLibrary("maps");
+            const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+
+            // Устанавливаем центр карты
+            const center = { lat: 50.4500336, lng: 30.5241361 };
+
+            // Создаем новый объект карты, указывая элемент DOM, зум и центр
+            map = new Map(document.getElementById('map'), {
+                zoom: 10,
+                center: center,
+                mapId: "DEMO_MAP_ID" // Идентификатор карты (для примера)
+            });
+
+            // Определяем маркеры для карты
+            const markers = [
+                {
+                    position: new google.maps.LatLng(50.4500336, 30.5241361),
+                    type: "city", // Тип маркера: город
+                },
+                {
+                    position: new google.maps.LatLng(50.429952, 30.375936),
+                    type: "location", // Тип маркера: местоположение
+                }
+            ];
+
+            // Иконки для разных типов маркеров
+            const icons = {
+                city: {
+                    name: "city",
+                    icon: '<i class="fa-solid fa-eye"></i>', // Иконка для города
+                },
+                location: {
+                    name: "location",
+                    icon: '<i class="fa-solid fa-house-chimney-user"></i>', // Иконка для местоположения
+                }
+            };
+
+            // Создаем маркеры на основе данных иконок
+            markers.forEach((marker) => {
+                // Создаем элемент иконки маркера
+                const iconItem = document.createElement("div");
+                iconItem.style.fontSize = "20px";
+                iconItem.innerHTML = icons[marker.type].icon; // Вставляем HTML иконки в элемент
+
+                // Создаем кастомизированный пин маркера с помощью PinElement
+                const faPin = new PinElement({
+                    glyph: iconItem,
+                    glyphColor: "#0b1cb0",
+                    background: 'transparent',
+                    borderColor: 'transparent',
+                });
+
+                // Создаем кастомизированный маркер на карте с использованием AdvancedMarkerElement
+                new AdvancedMarkerElement({
+                    position: marker.position,
+                    content: faPin.element,
+                    map: map,
+                });
+            });
+
+            // Функция для определения местоположения пользователя
+            getMyLocation();
+        }
+
+
+        initMap();
+
+        // =======================
+        // Определяем позицию юзера
+        // =======================
+        function getMyLocation() {
+            // Создаем окно информации для отображения сообщений
+            let infoWindow = new google.maps.InfoWindow();
+
+            // Находим кнопку для получения текущего местоположения
+            const btnLocation = document.querySelector('.btn-location');
+
+            // Добавляем обработчик событий для кнопки
+            btnLocation.addEventListener('click', e => {
+                e.preventDefault(); // Предотвращаем стандартное поведение кнопки
+
+                // Проверяем, поддерживает ли браузер геолокацию
+                if (navigator.geolocation) {
+                    // Если поддерживает, получаем текущее местоположение
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            // Если местоположение получено, создаем объект с координатами
+                            const pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude,
+                            };
+
+                            // Устанавливаем позицию и содержимое инфо-окна
+                            infoWindow.setPosition(pos);
+                            infoWindow.setContent("Местоположение найдено.");
+                            infoWindow.open(map); // Открываем инфо-окно на карте
+
+                            // Центрируем карту на полученных координатах
+                            map.setCenter(pos);
+                        },
+                        () => {
+                            // Если произошла ошибка при получении местоположения
+                            handleLocationError(true, infoWindow, map.getCenter());
+                        },
+                    );
+                } else {
+                    // Если браузер не поддерживает геолокацию
+                    handleLocationError(false, infoWindow, map.getCenter());
+                }
+            });
+
+            function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+                // Устанавливаем позицию инфо-окна на переданные координаты (pos)
+                infoWindow.setPosition(pos);
+
+                // Задаем содержимое инфо-окна в зависимости от того, поддерживает ли браузер геолокацию
+                infoWindow.setContent(
+                    browserHasGeolocation
+                        ? "Error: геолокация поддерживается, но произошла ошибка." 
+                        : "Error: геолокация не поддерживается." 
+                );
+
+                // Открываем инфо-окно на карте
+                infoWindow.open(map);
+            }
+        }
+    </script>
+    
+</body>
+
+</html>

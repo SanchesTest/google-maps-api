@@ -30,6 +30,7 @@ out geom; -->
             <option value="katiuzhanka">Катюжанка</option>
             <option value="bucha">Буча</option>
             <option value="brovary">Бровари</option>
+            <option value="area-kyiv">Київська область</option>
         </select>
     </div>
 
@@ -70,38 +71,37 @@ out geom; -->
             const selectSite = document.querySelector('.select-site-poligon');
             let script = null;
 
-            // Функция для загрузки данных и вызова initMap с новыми данными
             function loadDataAndInitMap() {
                 let selectedOption = selectSite.options[selectSite.selectedIndex];
                 let jsonData = null;
 
-                // Удаляем предыдущие скрипты, если они есть
                 document.querySelectorAll('script[data-dynamic]').forEach(script => {
                     script.remove();
                 });
 
-                // Создаем элемент скрипта
                 const script = document.createElement('script');
                 script.src = `${selectedOption.value}.js`;
                 script.setAttribute('data-dynamic', '');
 
-                // Ожидаем загрузку скрипта
                 script.onload = function() {
-                    // После загрузки скрипта, предполагая что data() возвращает данные
-                    jsonData = data(); // Переименовали переменную в jsonData и вызвали функцию data()
-                    initMap(jsonData); // Вызываем функцию инициализации карты с полученными данными
+                    try {
+                        jsonData = data();
+                        if (jsonData && jsonData.features && jsonData.features.length > 0) {
+                            initMap(jsonData);
+                        } else {
+                            console.error("Invalid data format or no features found.");
+                        }
+                    } catch (e) {
+                        console.error("Error parsing JSON data:", e);
+                    }
                 };
 
-                // Добавляем скрипт на страницу
                 document.body.append(script);
             }
 
-            // Вызываем loadDataAndInitMap при первой загрузке страницы
             loadDataAndInitMap();
 
-            // Обработчик события изменения выбора
             selectSite.addEventListener('change', function() {
-                // При изменении выбора загружаем новые данные и вызываем initMap
                 loadDataAndInitMap();
             });
         }
@@ -113,26 +113,62 @@ out geom; -->
             const { Map, Polygon  } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
 
-            const polygonCoordinates = choicedData.features[0].geometry.coordinates[0];
+            if (!choicedData.features || choicedData.features.length === 0) {
+                console.error("No features in the data.");
+                return;
+            }
 
-            // Создаем массив для хранения координат полигона
+            const feature = choicedData.features[0];
+            const geometryType = feature.geometry.type;
+            let polygonCoordinates = [];
+
+            if (geometryType === "Polygon") {
+                polygonCoordinates = feature.geometry.coordinates[0];
+            } else if (geometryType === "MultiPolygon") {
+                feature.geometry.coordinates.forEach(polygon => {
+                    polygon[0].forEach(coord => {
+                        polygonCoordinates.push(coord);
+                    });
+                });
+            } else {
+                console.error("Unsupported geometry type:", geometryType);
+                return;
+            }
+
+            if (!Array.isArray(polygonCoordinates) || polygonCoordinates.length === 0) {
+                console.error("Invalid polygon coordinates.");
+                return;
+            }
+
             const paths = [];
-            // Создаем переменные для хранения сумм координат
             let latSum = 0;
             let lngSum = 0;
 
-            // Заполняем массив координатами полигона и вычисляем суммы координат
+            
+
             polygonCoordinates.forEach(coord => {
+                if (coord.length < 2 || isNaN(coord[0]) || isNaN(coord[1])) {
+                    console.error("Invalid coordinate:", coord);
+                    return;
+                }
                 paths.push({ lat: coord[1], lng: coord[0] });
                 latSum += coord[1];
                 lngSum += coord[0];
+
+                
             });
 
-            // Вычисляем среднее значение широты и долготы
+            if (paths.length === 0) {
+                console.error("No valid coordinates found.");
+                return;
+            }
+
             const center = {
-                lat: latSum / polygonCoordinates.length,
-                lng: lngSum / polygonCoordinates.length
+                lat: latSum / paths.length,
+                lng: lngSum / paths.length
             };
+
+            console.log(center)
 
             const map = new Map(document.getElementById("map"), {
                 zoom: 10,
@@ -141,7 +177,6 @@ out geom; -->
                 streetViewControl: false
             });
 
-            // Создаем полигон
             const sitePolygon = new Polygon({
                 paths: paths,
                 strokeColor: "#FF0000",
@@ -151,13 +186,12 @@ out geom; -->
                 fillOpacity: 0.35,
             });
 
-            // Отображаем полигон на карте
             sitePolygon.setMap(map);
 
             const pin = new PinElement({
                 background: "#00a1de",
                 glyph: 'text',
-                borderColor: 'none',
+                borderColor: '#26649d',
             });
 
             const marker = new AdvancedMarkerElement({
