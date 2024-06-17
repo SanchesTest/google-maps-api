@@ -69,8 +69,9 @@ out geom; -->
         // Функция инициализации карты
         async function initMap() {
             // Загружаем библиотеку Google Maps и необходимые классы
-            const { Map } = await google.maps.importLibrary("maps");
+            const { Map, InfoWindow  } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+            const infoWindow = new InfoWindow();
 
             // Устанавливаем центр карты
             const center = { lat: 50.4500336, lng: 30.5241361 };
@@ -127,11 +128,22 @@ out geom; -->
                 });
 
                 // Создаем кастомизированный маркер на карте с использованием AdvancedMarkerElement
-                new AdvancedMarkerElement({
+                const mark = new AdvancedMarkerElement({
                     position: marker.position,
                     content: faPin.element,
+                    title: marker.type,
                     map: map,
+                    gmpClickable: true,
                 });
+
+                
+                mark.addListener("click", ({ domEvent, latLng }) => {
+                    const { target } = domEvent;
+                    infoWindow.close();
+                    infoWindow.setContent(mark.title);
+                    infoWindow.open(mark.map, mark);
+                });
+                
 
                 
             });
@@ -232,7 +244,7 @@ out geom; -->
             controlButton.type = "button";
             // Setup the click event listeners: simply set the map to Chicago.
             controlButton.addEventListener("click", () => {
-                map.setCenter(pos);
+                map.setCenter(pos);  
             });
             return controlButton;
         }
