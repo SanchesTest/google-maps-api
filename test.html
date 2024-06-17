@@ -88,7 +88,17 @@ out geom; -->
                 mapId: "DEMO_MAP_ID"
             });
 
+            // =======================
+            // Определяем координаты клика
+            // =======================
+            map.addListener('click', (e) => {
+                console.log('Lat: ' + e.latLng.lat());
+                console.log('Lon: ' + e.latLng.lng());
+            });
+
+            // =======================
             // Определяем маркеры для карты
+            // =======================
             const markers = [
                 {
                     position: new google.maps.LatLng(50.4500336, 30.5241361),
@@ -155,12 +165,14 @@ out geom; -->
 
             centerControlDiv.appendChild(centerControl);
             map.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
-            
+
             // =======================
              // Линии
              // =======================
             const flightPlanCoordinates = [
                 { lat: 50.4500336, lng: 30.5241361 },
+                { lat: 50.45116487566384, lng: 30.464229583740234 },
+                { lat: 50.43225839991225, lng: 30.427467138722637 },
                 { lat: 50.429952, lng: 30.375936 }
             ];
 
