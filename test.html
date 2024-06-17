@@ -69,7 +69,7 @@ out geom; -->
         // Функция инициализации карты
         async function initMap() {
             // Загружаем библиотеку Google Maps и необходимые классы
-            const { Map, InfoWindow  } = await google.maps.importLibrary("maps");
+            const { Map, InfoWindow } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
             const infoWindow = new InfoWindow();
 
@@ -143,9 +143,7 @@ out geom; -->
                     infoWindow.setContent(mark.title);
                     infoWindow.open(mark.map, mark);
                 });
-                
 
-                
             });
 
             // Функция для определения местоположения пользователя
@@ -157,6 +155,25 @@ out geom; -->
 
             centerControlDiv.appendChild(centerControl);
             map.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
+            
+            // =======================
+             // Линии
+             // =======================
+            const flightPlanCoordinates = [
+                { lat: 50.4500336, lng: 30.5241361 },
+                { lat: 50.429952, lng: 30.375936 }
+            ];
+
+            const flightPath = new google.maps.Polyline({
+                path: flightPlanCoordinates,
+                geodesic: true,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1.0,
+                strokeWeight: 2,
+            });
+
+            flightPath.setMap(map);
+            
         }
 
 
