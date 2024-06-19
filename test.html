@@ -186,7 +186,7 @@ out geom; -->
 
             // Пользовательская кнопка
             const centerControlDiv = document.createElement("div"); 
-            const centerControl = btnStartPosition(map, location);
+            const centerControl = btnStartPosition(map, home);
 
             centerControlDiv.appendChild(centerControl);
             map.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
