@@ -76,6 +76,8 @@ out geom; -->
             // Устанавливаем центр карты
             const center = { lat: 50.4500336, lng: 30.5241361 };
             const location = { lat: 50.429952, lng: 30.375936 };
+            const work = { lat: 50.46243998809047, lng: 30.448967134500712 };
+            const park = { lat: 50.43301453745046, lng: 30.4265214030007 };
 
             // Создаем новый объект карты, указывая элемент DOM, зум и центр
             map = new Map(document.getElementById('map'), {
@@ -101,12 +103,20 @@ out geom; -->
             // =======================
             const markers = [
                 {
-                    position: new google.maps.LatLng(50.4500336, 30.5241361),
+                    position: new google.maps.LatLng(center),
                     type: "city", // Тип маркера: город
                 },
                 {
-                    position: new google.maps.LatLng(50.429952, 30.375936),
+                    position: new google.maps.LatLng(location),
                     type: "location", // Тип маркера: местоположение
+                },
+                {
+                    position: new google.maps.LatLng(work),
+                    type: "work", // Тип маркера: местоположение
+                },
+                {
+                    position: new google.maps.LatLng(park),
+                    type: "park", // Тип маркера: местоположение
                 }
             ];
 
@@ -114,11 +124,19 @@ out geom; -->
             const icons = {
                 city: {
                     name: "city",
-                    icon: '<i class="fa-solid fa-eye"></i>', // Иконка для города
+                    icon: '<i class="fa-solid fa-eye"></i>',
                 },
                 location: {
                     name: "location",
-                    icon: '<i class="fa-solid fa-house-chimney-user"></i>', // Иконка для местоположения
+                    icon: '<i class="fa-solid fa-house-chimney-user"></i>', 
+                },
+                work: {
+                    name: "work",
+                    icon: '<i class="fa-solid fa-briefcase"></i>', 
+                },
+                park: {
+                    name: "park",
+                    icon: '<i class="fa-solid fa-tree"></i>', 
                 }
             };
   
@@ -170,10 +188,10 @@ out geom; -->
              // Линии
              // =======================
             const flightPlanCoordinates = [
-                { lat: 50.4500336, lng: 30.5241361 },
-                { lat: 50.45116487566384, lng: 30.464229583740234 },
-                { lat: 50.43225839991225, lng: 30.427467138722637 },
-                { lat: 50.429952, lng: 30.375936 }
+                { lat: center.lat, lng: center.lng },
+                { lat: work.lat, lng: work.lng },
+                { lat: location.lat, lng: location.lng },
+                { lat: park.lat, lng: park.lng }
             ];
 
             const flightPath = new google.maps.Polyline({
