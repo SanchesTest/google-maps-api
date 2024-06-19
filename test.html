@@ -233,29 +233,37 @@ out geom; -->
             map.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
 
             // =======================
-             // Линии
+             // координаты
              // =======================
-            const flightPlanCoordinates = [
+            const mainCoordinates = [
                 { lat: center.lat, lng: center.lng },
                 { lat: work.lat, lng: work.lng },
                 { lat: home.lat, lng: home.lng },
                 { lat: park.lat, lng: park.lng }
             ];
 
-            const flightPath = new google.maps.Polyline({
-                path: flightPlanCoordinates,
+            // Отображаем полилинию на карте
+            drawPolyline(map, mainCoordinates);
+            
+        }
+
+
+        initMap();
+
+        // =======================
+        // Рисование
+        // =======================
+        function drawPolyline(map, coordinates) {
+            const polyline = new google.maps.Polyline({
+                path: coordinates,
                 geodesic: true,
                 strokeColor: "#FF0000",
                 strokeOpacity: 1.0,
                 strokeWeight: 2,
             });
 
-            flightPath.setMap(map);
-            
+            polyline.setMap(map);  // Отображаем полилинию на карте
         }
-
-
-        initMap();
 
         // =======================
         // Определяем позицию юзера
