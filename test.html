@@ -143,11 +143,35 @@ out geom; -->
                 travelMode: 'DRIVING' // режим путешествия (например, 'DRIVING' для автомобильного маршрута).
             };
 
-            // Отправляем запрос на маршрут к DirectionsService
+            // Создание символа стрелки для указания направления
+            const arrowSymbol = {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,  // Используем встроенный путь для стрелки
+                scale: 3,  // Масштаб стрелки
+                strokeColor: '#0b1cb0'  // Цвет стрелки
+            };
+
+            // Запрос на получение маршрута от начальной точки до конечной через промежуточные точки
             directionsService.route(request, function(result, status) {
                 if (status === 'OK') {
                      // Если запрос успешен, отображаем маршрут на карте
                     directionsRenderer.setDirections(result);
+
+                   // Отображаем направление маршрута с помощью полилинии и стрелок
+                    const route = result.routes[0];  // Получаем маршрут
+                    const path = route.overview_path;  // Получаем путь маршрута
+                    const polyline = new google.maps.Polyline({
+                        path: path,  // Устанавливаем путь для полилинии
+                        geodesic: true,  // Устанавливаем геодезическую линию (по кратчайшему пути)
+                        strokeColor: '#FF0000',  // Цвет линии
+                        strokeOpacity: 1.0,  // Непрозрачность линии
+                        strokeWeight: 1,  // Толщина линии
+                        icons: [{
+                            icon: arrowSymbol,  // Символ стрелки для указания направления
+                            offset: '100%',  // Смещение стрелки (начало линии)
+                            repeat: '100px'  // Расстояние между стрелками (можно настроить)
+                        }]
+                    });
+                    polyline.setMap(map);  // Отображаем полилинию на карте
                 } else {
                     console.log('Directions request failed due to ' + status);
                 }
