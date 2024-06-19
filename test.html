@@ -72,10 +72,10 @@ out geom; -->
             const { Map, InfoWindow } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
             const infoWindow = new InfoWindow();
-
+            
             // Устанавливаем центр карты
             const center = { lat: 50.4500336, lng: 30.5241361 };
-            const location = { lat: 50.429952, lng: 30.375936 };
+            const home = { lat: 50.429952, lng: 30.375936 };
             const work = { lat: 50.46243998809047, lng: 30.448967134500712 };
             const park = { lat: 50.43301453745046, lng: 30.4265214030007 };
 
@@ -102,52 +102,62 @@ out geom; -->
             // Определяем маркеры для карты
             // =======================
             const markers = [
-                {
-                    position: new google.maps.LatLng(center),
-                    type: "city", // Тип маркера: город
-                },
-                {
-                    position: new google.maps.LatLng(location),
-                    type: "location", // Тип маркера: местоположение
-                },
-                {
-                    position: new google.maps.LatLng(work),
-                    type: "work", // Тип маркера: местоположение
-                },
-                {
-                    position: new google.maps.LatLng(park),
-                    type: "park", // Тип маркера: местоположение
-                }
+                { position: center, type: "city" },
+                { position: home, type: "home" },
+                { position: work, type: "work" },
+                { position: park, type: "park" }
             ];
 
             // Иконки для разных типов маркеров
             const icons = {
-                city: {
-                    name: "city",
-                    icon: '<i class="fa-solid fa-eye"></i>',
-                },
-                location: {
-                    name: "location",
-                    icon: '<i class="fa-solid fa-house-chimney-user"></i>', 
-                },
-                work: {
-                    name: "work",
-                    icon: '<i class="fa-solid fa-briefcase"></i>', 
-                },
-                park: {
-                    name: "park",
-                    icon: '<i class="fa-solid fa-tree"></i>', 
-                }
+                city: { icon: '<i class="fa-solid fa-eye"></i>' },
+                home: { icon: '<i class="fa-solid fa-house-chimney-user"></i>' },
+                work: { icon: '<i class="fa-solid fa-briefcase"></i>' },
+                park: { icon: '<i class="fa-solid fa-tree"></i>' }
             };
-  
+
             // Создаем маркеры на основе данных иконок
             markers.forEach((marker) => {
-                // Создаем элемент иконки маркера
+                addCustomMarker(marker.position, marker.type);
+            });
+
+            // Создание сервиса маршрутизации и визуализатора маршрутов
+            const directionsService = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true // Отключаем стандартные маркеры
+            });
+
+            // Определяем координаты промежуточных точек
+            // location: указывает координаты точки.
+            // stopover: указывает, нужно ли делать остановку в этой точке (true или false).
+            const waypoints = [
+                { location: new google.maps.LatLng(park), stopover: true }
+            ];
+
+            // Создание запроса на маршрут
+            const request = {
+                origin: home, // начальная точка маршрута.
+                destination: work, // конечная точка маршрута.
+                waypoints: waypoints, // массив промежуточных точек.
+                travelMode: 'DRIVING' // режим путешествия (например, 'DRIVING' для автомобильного маршрута).
+            };
+
+            // Отправляем запрос на маршрут к DirectionsService
+            directionsService.route(request, function(result, status) {
+                if (status === 'OK') {
+                     // Если запрос успешен, отображаем маршрут на карте
+                    directionsRenderer.setDirections(result);
+                } else {
+                    console.log('Directions request failed due to ' + status);
+                }
+            });
+
+            function addCustomMarker(position, type) {
                 const iconItem = document.createElement("div");
                 iconItem.style.fontSize = "20px";
-                iconItem.innerHTML = icons[marker.type].icon; // Вставляем HTML иконки в элемент
+                iconItem.innerHTML = icons[type].icon;
 
-                // Создаем кастомизированный пин маркера с помощью PinElement
                 const faPin = new PinElement({
                     glyph: iconItem,
                     glyphColor: "#0b1cb0",
@@ -155,24 +165,21 @@ out geom; -->
                     borderColor: 'transparent',
                 });
 
-                // Создаем кастомизированный маркер на карте с использованием AdvancedMarkerElement
                 const mark = new AdvancedMarkerElement({
-                    position: marker.position,
+                    position: position,
                     content: faPin.element,
-                    title: marker.type,
+                    title: type,
                     map: map,
                     gmpClickable: true,
                 });
 
-                
                 mark.addListener("click", ({ domEvent, latLng }) => {
                     const { target } = domEvent;
                     infoWindow.close();
                     infoWindow.setContent(mark.title);
                     infoWindow.open(mark.map, mark);
                 });
-
-            });
+            }
 
             // Функция для определения местоположения пользователя
             getMyLocation();
@@ -190,7 +197,7 @@ out geom; -->
             const flightPlanCoordinates = [
                 { lat: center.lat, lng: center.lng },
                 { lat: work.lat, lng: work.lng },
-                { lat: location.lat, lng: location.lng },
+                { lat: home.lat, lng: home.lng },
                 { lat: park.lat, lng: park.lng }
             ];
 
