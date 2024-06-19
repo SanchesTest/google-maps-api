@@ -153,6 +153,7 @@ out geom; -->
             // Запрос на получение маршрута от начальной точки до конечной через промежуточные точки
             directionsService.route(request, function(result, status) {
                 if (status === 'OK') {
+                    console.log(result)
                      // Если запрос успешен, отображаем маршрут на карте
                     directionsRenderer.setDirections(result);
 
@@ -172,6 +173,22 @@ out geom; -->
                         }]
                     });
                     polyline.setMap(map);  // Отображаем полилинию на карте
+
+                    // Выводим расстояние между точками
+                    let totalDistance = 0;
+                    const legs = route.legs;  // Получаем этапы маршрута
+                    for (let i = 0; i < legs.length; i++) {
+                        totalDistance += legs[i].distance.value;  // Добавляем расстояние каждого этапа
+                    }
+                    totalDistance /= 1000;  // Конвертируем в километры
+                    
+                    // Отображаем расстояние на карте
+                    const distanceInfoWindow = new google.maps.InfoWindow({
+                        content: 'Total distance: ' + totalDistance.toFixed(2) + ' km',
+                        position: work
+                    });
+                    distanceInfoWindow.open(map);
+
                 } else {
                     console.log('Directions request failed due to ' + status);
                 }
