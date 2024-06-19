@@ -23,10 +23,35 @@ out geom; -->
             width: 100%;
             /* The width is the width of the web page */
         }
+        .settings {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .show-line {
+            margin-left: 10px;
+        }
+        .show-line  h3 {
+            margin: 0;
+            margin-right: 5px;
+        }
     </style>
 
-    <button class="btn-location">Мое расположение</button>
-
+    <div class="settings">
+        <button class="btn-location">Мое расположение</button>
+        <div class="show-line">
+            <h3>Линии</h3>
+            <div>
+                <input type="radio" id="show-line" class="show-line__inp" name="line" />
+                <label for="show-line">Отобразить</label>
+            </div>
+            <div>
+                <input type="radio" id="hide-line" class="show-line__inp" name="line" checked />
+                <label for="hide-line">Скрыть</label>
+            </div>
+        </div>
+    </div>
+    
     <div id="map"></div>
 
     <script>
@@ -72,6 +97,8 @@ out geom; -->
             const { Map, InfoWindow } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
             const infoWindow = new InfoWindow();
+
+            const lineVis = document.querySelectorAll('.show-line__inp');
             
             // Устанавливаем центр карты
             const center = { lat: 50.4500336, lng: 30.5241361 };
@@ -89,14 +116,9 @@ out geom; -->
                 },
                 mapId: "DEMO_MAP_ID"
             });
-
-            // =======================
-            // Определяем координаты клика
-            // =======================
-            map.addListener('click', (e) => {
-                console.log('Lat: ' + e.latLng.lat());
-                console.log('Lon: ' + e.latLng.lng());
-            });
+    
+           // Определяем координаты клика
+            getCoord(map);
 
             // =======================
             // Определяем маркеры для карты
@@ -115,6 +137,15 @@ out geom; -->
                 work: { icon: '<i class="fa-solid fa-briefcase"></i>' },
                 park: { icon: '<i class="fa-solid fa-tree"></i>' }
             };
+
+            // =======================
+             // координаты для линий
+             // =======================
+             const forLineCoordinates = [
+                { lat: work.lat, lng: work.lng },
+                { lat: home.lat, lng: home.lng },
+                { lat: park.lat, lng: park.lng }
+            ];
 
             // Создаем маркеры на основе данных иконок
             markers.forEach((marker) => {
@@ -153,7 +184,6 @@ out geom; -->
             // Запрос на получение маршрута от начальной точки до конечной через промежуточные точки
             directionsService.route(request, function(result, status) {
                 if (status === 'OK') {
-                    console.log(result)
                      // Если запрос успешен, отображаем маршрут на карте
                     directionsRenderer.setDirections(result);
 
@@ -232,18 +262,17 @@ out geom; -->
             centerControlDiv.appendChild(centerControl);
             map.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
 
-            // =======================
-             // координаты
-             // =======================
-            const mainCoordinates = [
-                { lat: center.lat, lng: center.lng },
-                { lat: work.lat, lng: work.lng },
-                { lat: home.lat, lng: home.lng },
-                { lat: park.lat, lng: park.lng }
-            ];
-
+            
             // Отображаем полилинию на карте
-            drawPolyline(map, mainCoordinates);
+            let polyline;
+            
+            lineVis[0].addEventListener('click', () => {
+                drawPolyline(map, forLineCoordinates);
+            });
+            lineVis[1].addEventListener('click', () => {
+                drawPolyline(null);
+            });
+            
             
         }
 
@@ -251,10 +280,28 @@ out geom; -->
         initMap();
 
         // =======================
+            // Определяем координаты клика
+            // =======================
+        function getCoord(map) {
+            map.addListener('click', (e) => {
+                console.log('Lat: ' + e.latLng.lat());
+                console.log('Lon: ' + e.latLng.lng());
+            });
+        }
+
+        // =======================
         // Рисование
         // =======================
         function drawPolyline(map, coordinates) {
-            const polyline = new google.maps.Polyline({
+            if (!coordinates) {
+                // Если coordinates === null, то убираем полилинию с карты
+                if (polyline) {
+                    polyline.setMap(null);
+                }
+                return;
+            }
+
+            polyline = new google.maps.Polyline({
                 path: coordinates,
                 geodesic: true,
                 strokeColor: "#FF0000",
